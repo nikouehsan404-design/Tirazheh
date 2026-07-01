@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tirazheh</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tahoma', 'Arial', sans-serif;
+        }
+        body {
+            background: #f5f5f5;
+            padding: 10px;
+            padding-bottom: 30px;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .menu {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .menu button {
+            flex: 1;
+            min-width: 90px;
+            padding: 12px 8px;
+            border: none;
+            border-radius: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .page {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .active {
+            display: block;
+        }
+        input, button, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button.red { background: #e74c3c; }
+        button.green { background: #27ae60; }
+        button.orange { background: #f39c12; }
+        button.small {
+            width: auto;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .invoice-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .qty-control button {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            font-size: 18px;
+            border-radius: 50%;
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px;
+        }
+        .warning {
+            background: #ffeaa7;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .profit {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            color: #27ae60;
+        }
+        .hidden { display: none; }
+        h3 { margin-bottom: 10px; color: #2c3e50; }
+        h4 { margin: 10px 0; color: #7f8c8d; }
+        hr { border: none; border-top: 1px solid #eee; margin: 15px 0; }
+        .sale-detail {
+            cursor: pointer;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .detail-popup {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+        .action-btns { display: flex; gap: 5px; }
+        .pin-input {
+            letter-spacing: 10px;
+            text-align: center;
+            font-size: 20px;
+        }
+        
+        /* مودال برای وارد کردن اعداد */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
+        }
+        .modal-box h3 {
+            margin-bottom: 10px;
+        }
+        .modal-box p {
+            margin-bottom: 15px;
+            color: #7f8c8d;
+        }
+        .modal-box input {
+            font-size: 24px;
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+        }
+        .modal-box button {
+            margin: 5px 0;
+            padding: 14px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Tirazheh</h2>
+        <p>مدیریت فروش و موجودی</p>
+    </div>
+
+    <div class="menu" id="mainMenu">
+        <button onclick="showPage('sell')">فروش</button>
+        <button onclick="showPage('inventory')">موجودی</button>
+        <button onclick="showPage('changePrice')">تغییر قیمت</button>
+        <button onclick="showPage('newPurchase')">خرید جدید</button>
+        <button onclick="showPage('withdraw')">برداشت</button>
+        <button onclick="showPage('history')">تاریخچه</button>
+        <button onclick="showPage('personal')">مدیریت</button>
+    </div>
+
+    <!-- صفحه فروش -->
+    <div class="page active" id="sell">
+        <h3>فروش</h3>
+        <input type="text" id="searchSell" placeholder="جستجوی کالا..." oninput="searchProduct('sell')">
+        <div id="searchResultsSell" style="max-height:200px;overflow-y:auto;"></div>
+        <h4>فاکتور</h4>
+        <div id="invoice" style="max-height:200px;overflow-y:auto;"></div>
+        <div class="total">مبلغ کل: <span id="totalPrice">0</span> تومان</div>
+        <button onclick="submitSale()">ثبت فروش</button>
+    </div>
+
+    <!-- صفحه موجودی -->
+    <div class="page" id="inventory">
+        <h3>موجودی</h3>
+        <input type="text" id="searchInventory" placeholder="جستجوی کالا..." oninput="searchProduct('inventory')">
+        <div id="inventoryList"></div>
+    </div>
+
+    <!-- صفحه تغییر قیمت -->
+    <div class="page" id="changePrice">
+        <h3>تغییر قیمت فروش</h3>
+        <input type="text" id="searchPrice" placeholder="جستجوی کالا..." oninput="searchProduct('price')">
+        <div id="priceResults"></div>
+    </div>
+
+    <!-- صفحه خرید جدید -->
+    <div class="page" id="newPurchase">
+        <h3>خرید جدید</h3>
+        <h4>ثبت کالای جدید</h4>
+        <input type="text" id="newProductName" placeholder="نام کالا">
+        <button onclick="openQtyModal('newProductQty','تعداد')">وارد کردن تعداد</button>
+        <button onclick="openPriceModal('newProductBuyPrice','قیمت خرید')">وارد کردن قیمت خرید</button>
+        <button onclick="openPriceModal('newProductSellPrice','قیمت فروش')">وارد کردن قیمت فروش</button>
+        <div style="background:#f0f0f0;padding:10px;border-radius:5px;margin:5px 0;">
+            تعداد: <span id="showQty">-</span> | 
+            قیمت خرید: <span id="showBuyPrice">-</span> | 
+            قیمت فروش: <span id="showSellPrice">-</span>
+        </div>
+        <button onclick="addNewProduct()">ثبت کالای جدید</button>
+        <hr>
+        <h4>افزایش موجودی کالای موجود</h4>
+        <input type="text" id="searchExisting" placeholder="جستجوی کالا..." oninput="searchProduct('existing')">
+        <div id="existingResults"></div>
+    </div>
+
+    <!-- صفحه برداشت -->
+    <div class="page" id="withdraw">
+        <h3>برداشت از موجودی</h3>
+        <p style="color:#7f8c8d;font-size:12px;margin-bottom:10px;">لطفاً رمز عبور را وارد کنید</p>
+        <input type="password" id="withdrawPin" class="pin-input" placeholder="* * * *" maxlength="4">
+        <button onclick="verifyWithdrawPin()">ورود به بخش برداشت</button>
+        <div id="withdrawSection" class="hidden">
+            <input type="text" id="searchWithdraw" placeholder="جستجوی کالا..." oninput="searchWithdrawProduct()">
+            <div id="withdrawResults"></div>
+        </div>
+    </div>
+
+    <!-- صفحه تاریخچه فروش -->
+    <div class="page" id="history">
+        <h3>تاریخچه فروش</h3>
+        <div id="salesHistory"></div>
+    </div>
+
+    <!-- صفحه مدیریت -->
+    <div class="page" id="personal">
+        <h3>مدیریت</h3>
+        <p style="color:#7f8c8d;font-size:12px;margin-bottom:10px;">لطفاً رمز عبور را وارد کنید</p>
+        <input type="password" id="personalPin" class="pin-input" placeholder="* * * *" maxlength="4">
+        <button onclick="verifyPersonalPin()">ورود به بخش مدیریت</button>
+        <div id="personalSection" class="hidden">
+            <div class="menu" style="margin:15px 0;">
+                <button onclick="showPersonalPage('buyPrice')" style="font-size:11px;">قیمت خرید</button>
+                <button onclick="showPersonalPage('dailyProfit')" style="font-size:11px;">سود روزانه</button>
+                <button onclick="showPersonalPage('monthlyProfit')" style="font-size:11px;">سود ماهانه</button>
+                <button onclick="showPersonalPage('yearlyProfit')" style="font-size:11px;">سود سالانه</button>
+                <button onclick="showPersonalPage('archive')" style="font-size:11px;">بایگانی</button>
+            </div>
+            <div id="personalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let products = JSON.parse(localStorage.getItem('tirazheh_products')) || [];
+        let sales = JSON.parse(localStorage.getItem('tirazheh_sales')) || [];
+        let withdrawals = JSON.parse(localStorage.getItem('tirazheh_withdrawals')) || [];
+        let invoice = [];
+        let selectedProduct = null;
+        let withdrawVerified = false;
+        let personalVerified = false;
+        const PIN = '2853';
+        
+        // متغیرهای موقت برای خرید جدید
+        let tempQty = 0;
+        let tempBuyPrice = 0;
+        let tempSellPrice = 0;
+
+        if (products.length === 0) {
+            products = [
+                {id: 1, name: 'دفتر ۶۰ برگ', qty: 50, buyPrice: 15000, sellPrice: 25000, buyHistory: [{price: 15000, date: '۱۴۰۲/۰۱/۰۱'}]},
+                {id: 2, name: 'مداد HB', qty: 100, buyPrice: 5000, sellPrice: 8000, buyHistory: [{price: 5000, date: '۱۴۰۲/۰۱/۰۱'}]},
+                {id: 3, name: 'خودکار آبی', qty: 30, buyPrice: 7000, sellPrice: 12000, buyHistory: [{price: 7000, date: '۱۴۰۲/۰۱/۰۱'}]}
+            ];
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('tirazheh_products', JSON.stringify(products));
+            localStorage.setItem('tirazheh_sales', JSON.stringify(sales));
+            localStorage.setItem('tirazheh_withdrawals', JSON.stringify(withdrawals));
+        }
+
+        // مودال‌های ورود عدد
+        function openPriceModal(varName, title) {
+            const currentVal = varName === 'newProductBuyPrice' ? tempBuyPrice : tempSellPrice;
+            let modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'numModal';
+            modal.innerHTML = '<div class="modal-box">' +
+                '<h3>' + title + '</h3>' +
+                '<p>مبلغ را به تومان وارد کنید</p>' +
+                '<input type="number" id="modalInput" value="' + (currentVal || '') + '" placeholder="مثلاً 25000">' +
+                '<button onclick="saveNumModal(\'' + varName + '\')" style="background:#27ae60;">تأیید</button>' +
+                '<button onclick="closeNumModal()" style="background:#95a5a6;">انصراف</button>' +
+                '</div>';
+            document.body.appendChild(modal);
+            setTimeout(() => {
+                document.getElementById('modalInput').focus();
+                document.getElementById('modalInput').select();
+            }, 200);
+        }
+
+        function openQtyModal(varName, title) {
+            let modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'numModal';
+            modal.innerHTML = '<div class="modal-box">' +
+                '<h3>' + title + '</h3>' +
+                '<p>تعداد را وارد کنید</p>' +
+                '<input type="number" id="modalInput" value="' + (tempQty || '') + '" placeholder="مثلاً 10">' +
+                '<button onclick="saveNumModal(\'' + varName + '\')" style="background:#27ae60;">تأیید</button>' +
+                '<button onclick="closeNumModal()" style="background:#95a5a6;">انصراف</button>' +
+                '</div>';
+            document.body.appendChild(modal);
+            setTimeout(() => {
+                document.getElementById('modalInput').focus();
+                document.getElementById('modalInput').select();
+            }, 200);
+        }
+
+        function closeNumModal() {
+            const modal = document.getElementById('numModal');
+            if (modal) modal.remove();
+        }
+
+        function saveNumModal(varName) {
+            const val = parseInt(document.getElementById('modalInput').value);
+            if (!val && val !== 0) return;
+            
+            if (varName === 'newProductQty') tempQty = val;
+            else if (varName === 'newProductBuyPrice') tempBuyPrice = val;
+            else if (varName === 'newProductSellPrice') tempSellPrice = val;
+            
+            document.getElementById('showQty').textContent = tempQty || '-';
+            document.getElementById('showBuyPrice').textContent = tempBuyPrice ? tempBuyPrice.toLocaleString('fa-IR') : '-';
+            document.getElementById('showSellPrice').textContent = tempSellPrice ? tempSellPrice.toLocaleString('fa-IR') : '-';
+            
+            closeNumModal();
+        }
+
+        function openPriceEditModal(productId) {
+            const product = products.find(p => p.id === productId);
+            let modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'priceEditModal';
+            modal.innerHTML = '<div class="modal-box">' +
+                '<h3>تغییر قیمت</h3>' +
+                '<p><strong>' + product.name + '</strong></p>' +
+                '<p>قیمت فعلی: ' + product.sellPrice.toLocaleString('fa-IR') + ' تومان</p>' +
+                '<input type="number" id="modalPriceInput" value="' + product.sellPrice + '" placeholder="قیمت جدید">' +
+                '<button onclick="savePriceFromModal(' + productId + ')" style="background:#27ae60;">ذخیره</button>' +
+                '<button onclick="closePriceEditModal()" style="background:#95a5a6;">انصراف</button>' +
+                '</div>';
+            document.body.appendChild(modal);
+            setTimeout(() => {
+                document.getElementById('modalPriceInput').focus();
+                document.getElementById('modalPriceInput').select();
+            }, 200);
+        }
+
+        function closePriceEditModal() {
+            const modal = document.getElementById('priceEditModal');
+            if (modal) modal.remove();
+        }
+
+        function savePriceFromModal(productId) {
+            const product = products.find(p => p.id === productId);
+            const newPrice = parseInt(document.getElementById('modalPriceInput').value);
+            if (newPrice) {
+                product.sellPrice = newPrice;
+                saveData();
+                alert('قیمت تغییر کرد');
+            }
+            closePriceEditModal();
+            searchProduct('price');
+        }
+
+        function openExistingModal(productId) {
+            const product = products.find(p => p.id === productId);
+            let modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'existingModal';
+            modal.innerHTML = '<div class="modal-box">' +
+                '<h3>افزایش موجودی</h3>' +
+                '<p><strong>' + product.name + '</strong></p>' +
+                '<p>موجودی فعلی: ' + product.qty + '</p>' +
+                '<input type="number" id="modalExistingQty" placeholder="تعداد اضافه شده">' +
+                '<input type="number" id="modalExistingPrice" placeholder="قیمت خرید جدید (تومان)" value="' + product.buyPrice + '">' +
+                '<button onclick="saveExistingModal(' + productId + ')" style="background:#27ae60;">ثبت</button>' +
+                '<button onclick="closeExistingModal()" style="background:#95a5a6;">انصراف</button>' +
+                '</div>';
+            document.body.appendChild(modal);
+            setTimeout(() => document.getElementById('modalExistingQty').focus(), 200);
+        }
+
+        function closeExistingModal() {
+            const modal = document.getElementById('existingModal');
+            if (modal) modal.remove();
+        }
+
+        function saveExistingModal(productId) {
+            const product = products.find(p => p.id === productId);
+            const qty = parseInt(document.getElementById('modalExistingQty').value);
+            const price = parseInt(document.getElementById('modalExistingPrice').value);
+            if (!qty || !price) return alert('همه موارد را پر کنید');
+            product.qty += qty;
+            product.buyPrice = price;
+            product.buyHistory.push({price: price, date: new Date().toLocaleDateString('fa-IR')});
+            saveData();
+            alert('موجودی افزایش یافت');
+            closeExistingModal();
+            searchProduct('existing');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'inventory') updateInventory();
+            if (pageId === 'history') updateHistory();
+            if (pageId === 'withdraw') {
+                withdrawVerified = false;
+                document.getElementById('withdrawPin').value = '';
+                document.getElementById('withdrawSection').classList.add('hidden');
+            }
+            if (pageId === 'personal') {
+                personalVerified = false;
+                document.getElementById('personalPin').value = '';
+                document.getElementById('personalSection').classList.add('hidden');
+            }
+        }
+
+        function verifyWithdrawPin() {
+            if (document.getElementById('withdrawPin').value === PIN) {
+                withdrawVerified = true;
+                document.getElementById('withdrawSection').classList.remove('hidden');
+            } else {
+                alert('رمز اشتباه است');
+            }
+        }
+
+        function verifyPersonalPin() {
+            if (document.getElementById('personalPin').value === PIN) {
+                personalVerified = true;
+                document.getElementById('personalSection').classList.remove('hidden');
+            } else {
+                alert('رمز اشتباه است');
+            }
+        }
+
+        function requirePin(title, callback) {
+            const pin = prompt(title + '\nرمز ۴ رقمی:');
+            if (pin === PIN) callback();
+            else if (pin !== null) alert('رمز اشتباه است');
+        }
+
+        function showPersonalPage(page) {
+            if (!personalVerified) return;
+            const content = document.getElementById('personalContent');
+            content.innerHTML = '';
+            
+            if (page === 'dailyProfit') {
+                const today = new Date().toISOString().split('T')[0];
+                const todaySales = sales.filter(s => s.date === today);
+                const totalSales = todaySales.reduce((sum, s) => sum + s.total, 0);
+                const totalCost = todaySales.reduce((sum, s) => {
+                    return sum + s.items.reduce((itemSum, i) => {
+                        const product = products.find(p => p.id === i.id);
+                        return itemSum + (product ? product.buyPrice * i.qty : 0);
+                    }, 0);
+                }, 0);
+                content.innerHTML = '<div class="profit">سود امروز: ' + (totalSales - totalCost).toLocaleString('fa-IR') + ' تومان</div>';
+            } else if (page === 'monthlyProfit') {
+                const now = new Date();
+                const month = now.getMonth() + 1;
+                const year = now.getFullYear();
+                const monthSales = sales.filter(s => {
+                    const d = new Date(s.date);
+                    return d.getMonth() + 1 === month && d.getFullYear() === year;
+                });
+                const totalSales = monthSales.reduce((sum, s) => sum + s.total, 0);
+                const totalCost = monthSales.reduce((sum, s) => {
+                    return sum + s.items.reduce((itemSum, i) => {
+                        const product = products.find(p => p.id === i.id);
+                        return itemSum + (product ? product.buyPrice * i.qty : 0);
+                    }, 0);
+                }, 0);
+                content.innerHTML = '<div class="profit">سود این ماه: ' + (totalSales - totalCost).toLocaleString('fa-IR') + ' تومان</div>';
+            } else if (page === 'yearlyProfit') {
+                const year = new Date().getFullYear();
+                const yearSales = sales.filter(s => new Date(s.date).getFullYear() === year);
+                const totalSales = yearSales.reduce((sum, s) => sum + s.total, 0);
+                const totalCost = yearSales.reduce((sum, s) => {
+                    return sum + s.items.reduce((itemSum, i) => {
+                        const product = products.find(p => p.id === i.id);
+                        return itemSum + (product ? product.buyPrice * i.qty : 0);
+                    }, 0);
+                }, 0);
+                content.innerHTML = '<div class="profit">سود امسال: ' + (totalSales - totalCost).toLocaleString('fa-IR') + ' تومان</div>';
+            } else if (page === 'archive') {
+                let html = '<h4>بایگانی قیمت‌های خرید</h4>';
+                products.forEach(p => {
+                    html += '<div style="margin-bottom:15px;padding:10px;background:#f9f9f9;border-radius:5px;">' +
+                        '<strong>' + p.name + '</strong> - قیمت فروش: ' + p.sellPrice.toLocaleString('fa-IR') + ' تومان' +
+                        '<br>تاریخچه خرید:' +
+                        p.buyHistory.map(h => '<br>' + h.date + ': ' + h.price.toLocaleString('fa-IR') + ' تومان').join('') +
+                        '<br><button onclick="editSellPriceFromArchive(' + p.id + ')" style="width:auto;padding:5px 10px;margin-top:5px;">تغییر قیمت فروش</button>' +
+                        '</div>';
+                });
+                content.innerHTML = html;
+            } else if (page === 'buyPrice') {
+                let html = '<h4>ثبت قیمت خرید جدید</h4>';
+                html += '<input type="text" id="archiveSearch" placeholder="جستجوی کالا..." oninput="searchInArchive()">';
+                html += '<div id="archiveSearchResults"></div>';
+                content.innerHTML = html;
+            }
+        }
+
+        function searchProduct(type) {
+            const query = type === 'sell' ? document.getElementById('searchSell').value :
+                          type === 'inventory' ? document.getElementById('searchInventory').value :
+                          type === 'price' ? document.getElementById('searchPrice').value :
+                          document.getElementById('searchExisting').value;
+            
+            const results = products.filter(p => p.name.includes(query));
+            let html = '';
+            
+            results.forEach(p => {
+                if (type === 'sell') {
+                    html += '<div class="list-item">' +
+                        '<span>' + p.name + ' (موجودی: ' + p.qty + ')</span>' +
+                        '<span>' + p.sellPrice.toLocaleString('fa-IR') + ' تومان</span>' +
+                        '<button class="small" onclick="addToInvoice(' + p.id + ')">+</button></div>';
+                } else if (type === 'inventory') {
+                    const warning = p.qty <= 3 ? '<span class="warning">⚠ فقط ' + p.qty + ' عدد!</span>' : '';
+                    html += '<div class="list-item"><div><span>' + p.name + ' ' + warning + '</span>' +
+                        '<br><small>موجودی: ' + p.qty + ' | قیمت: ' + p.sellPrice.toLocaleString('fa-IR') + ' تومان</small></div>' +
+                        '<div class="action-btns">' +
+                        '<button class="small" onclick="changeInventoryQty(' + p.id + ', 1)">+</button>' +
+                        '<button class="small" onclick="changeInventoryQty(' + p.id + ', -1)">-</button>' +
+                        '<button class="small red" onclick="deleteProduct(' + p.id + ')">حذف</button></div></div>';
+                } else if (type === 'price') {
+                    html += '<div class="list-item" onclick="openPriceEditModal(' + p.id + ')">' +
+                        '<span>' + p.name + '</span>' +
+                        '<span>قیمت: ' + p.sellPrice.toLocaleString('fa-IR') + ' تومان</span></div>';
+                } else if (type === 'existing') {
+                    html += '<div class="list-item">' +
+                        '<span>' + p.name + ' (موجودی: ' + p.qty + ')</span>' +
+                        '<button class="small green" onclick="openExistingModal(' + p.id + ')">+ افزایش</button></div>';
+                }
+            });
+            
+            const target = type === 'sell' ? 'searchResultsSell' :
+                           type === 'inventory' ? 'inventoryList' :
+                           type === 'price' ? 'priceResults' : 'existingResults';
+            document.getElementById(target).innerHTML = html || 'کالایی یافت نشد';
+        }
+
+        function changeInventoryQty(productId, delta) {
+            requirePin('برای تغییر موجودی', function() {
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    product.qty += delta;
+                    if (product.qty < 0) product.qty = 0;
+                    saveData();
+                    updateInventory();
+                }
+            });
+        }
+
+        function deleteProduct(productId) {
+            requirePin('برای حذف کالا', function() {
+                if (confirm('حذف شود؟')) {
+                    products = products.filter(p => p.id !== productId);
+                    saveData();
+                    updateInventory();
+                }
+            });
+        }
+
+        function addToInvoice(productId) {
+            const product = products.find(p => p.id === productId);
+            const existing = invoice.find(i => i.id === productId);
+            if (existing) existing.qty++;
+            else invoice.push({id: productId, name: product.name, price: product.sellPrice, qty: 1});
+            updateInvoice();
+        }
+
+        function removeFromInvoice(productId) {
+            invoice = invoice.filter(i => i.id !== productId);
+            updateInvoice();
+        }
+
+        function changeInvoiceQty(productId, delta) {
+            const item = invoice.find(i => i.id === productId);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) removeFromInvoice(productId);
+                else updateInvoice();
+            }
+        }
+
+        function updateInvoice() {
+            let html = '', total = 0;
+            invoice.forEach(item => {
+                html += '<div class="invoice-item"><span>' + item.name + '</span>' +
+                    '<div class="qty-control">' +
+                    '<button class="small" onclick="changeInvoiceQty(' + item.id + ', -1)">-</button>' +
+                    '<span>' + item.qty + '</span>' +
+                    '<button class="small" onclick="changeInvoiceQty(' + item.id + ', 1)">+</button></div>' +
+                    '<span>' + (item.price * item.qty).toLocaleString('fa-IR') + ' تومان</span>' +
+                    '<button class="small red" onclick="removeFromInvoice(' + item.id + ')">✕</button></div>';
+                total += item.price * item.qty;
+            });
+            document.getElementById('invoice').innerHTML = html || 'خالی';
+            document.getElementById('totalPrice').textContent = total.toLocaleString('fa-IR');
+        }
+
+        function submitSale() {
+            if (invoice.length === 0) return alert('فاکتور خالی است');
+            const total = invoice.reduce((sum, i) => sum + i.price * i.qty, 0);
+            const sale = {
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                time: new Date().toLocaleTimeString('fa-IR'),
+                items: invoice.map(i => ({id: i.id, name: i.name, price: i.price, qty: i.qty})),
+                total: total
+            };
+            sales.unshift(sale);
+            invoice.forEach(i => {
+                const product = products.find(p => p.id === i.id);
+                if (product) product.qty -= i.qty;
+            });
+            invoice = [];
+            saveData();
+            updateInvoice();
+            alert('فروش ثبت شد');
+        }
+
+        function addNewProduct() {
+            const name = document.getElementById('newProductName').value;
+            if (!name) return alert('نام کالا را وارد کنید');
+            if (!tempQty || !tempBuyPrice || !tempSellPrice) return alert('همه موارد را وارد کنید');
+            if (products.find(p => p.name === name)) return alert('این کالا وجود دارد');
+            
+            products.push({
+                id: Date.now(),
+                name: name,
+                qty: tempQty,
+                buyPrice: tempBuyPrice,
+                sellPrice: tempSellPrice,
+                buyHistory: [{price: tempBuyPrice, date: new Date().toLocaleDateString('fa-IR')}]
+            });
+            saveData();
+            alert('کالا اضافه شد');
+            document.getElementById('newProductName').value = '';
+            tempQty = 0; tempBuyPrice = 0; tempSellPrice = 0;
+            document.getElementById('showQty').textContent = '-';
+            document.getElementById('showBuyPrice').textContent = '-';
+            document.getElementById('showSellPrice').textContent = '-';
+        }
+
+        function searchWithdrawProduct() {
+            if (!withdrawVerified) return;
+            const query = document.getElementById('searchWithdraw').value;
+            const results = products.filter(p => p.name.includes(query));
+            let html = '';
+            results.forEach(p => {
+                html += '<div class="list-item"><span>' + p.name + ' (موجودی: ' + p.qty + ')</span>' +
+                    '<button class="small orange" onclick="withdrawProduct(' + p.id + ')">برداشت</button></div>';
+            });
+            document.getElementById('withdrawResults').innerHTML = html || 'کالایی یافت نشد';
+        }
+
+        function withdrawProduct(productId) {
+            if (!withdrawVerified) return;
+            const product = products.find(p => p.id === productId);
+            const qty = prompt('چند عدد؟ (موجودی: ' + product.qty + ')');
+            if (!qty || parseInt(qty) <= 0) return;
+            if (parseInt(qty) > product.qty) return alert('موجودی کافی نیست');
+            const reason = prompt('علت:');
+            product.qty -= parseInt(qty);
+            withdrawals.push({
+                id: Date.now(),
+                productId: productId,
+                productName: product.name,
+                qty: parseInt(qty),
+                reason: reason || 'بدون علت',
+                date: new Date().toLocaleDateString('fa-IR'),
+                time: new Date().toLocaleTimeString('fa-IR')
+            });
+            saveData();
+            alert('برداشت ثبت شد');
+            searchWithdrawProduct();
+        }
+
+        function updateInventory() { searchProduct('inventory'); }
+
+        function updateHistory() {
+            let html = '';
+            sales.slice(0, 50).forEach(s => {
+                html += '<div class="sale-detail" onclick="toggleSaleDetail(' + s.id + ')">' +
+                    '<strong>' + s.date + ' - ' + s.time + '</strong><br>' +
+                    s.items.map(i => i.name + ' (' + i.qty + ' عدد)').join('، ') +
+                    '<br><span style="color:#27ae60;font-weight:bold;">مبلغ: ' + s.total.toLocaleString('fa-IR') + ' تومان</span></div>' +
+                    '<div class="detail-popup hidden" id="saleDetail' + s.id + '">' +
+                    '<strong>جزئیات:</strong><br>' +
+                    s.items.map(i => '<div style="padding:5px 0;border-bottom:1px dotted #ddd;">' + i.name + ': ' + i.qty + ' × ' + i.price.toLocaleString('fa-IR') + ' = ' + (i.qty * i.price).toLocaleString('fa-IR') + ' تومان</div>').join('') +
+                    '<br><button class="small red" onclick="event.stopPropagation();deleteSale(' + s.id + ')">🗑 حذف</button></div>';
+            });
+            document.getElementById('salesHistory').innerHTML = html || 'هنوز فروشی ثبت نشده';
+        }
+
+        function toggleSaleDetail(saleId) {
+            const detail = document.getElementById('saleDetail' + saleId);
+            document.querySelectorAll('.detail-popup').forEach(d => d.classList.add('hidden'));
+            if (detail.classList.contains('hidden')) detail.classList.remove('hidden');
+            else detail.classList.add('hidden');
+        }
+
+        function deleteSale(saleId) {
+            requirePin('برای حذف فروش', function() {
+                if (confirm('حذف شود؟')) {
+                    const sale = sales.find(s => s.id === saleId);
+                    if (sale) {
+                        sale.items.forEach(i => {
+                            const product = products.find(p => p.id === i.id);
+                            if (product) product.qty += i.qty;
+                        });
+                    }
+                    sales = sales.filter(s => s.id !== saleId);
+                    saveData();
+                    updateHistory();
+                    alert('حذف شد و موجودی برگشت');
+                }
+            });
+        }
+
+        function searchInArchive() {
+            if (!personalVerified) return;
+            const query = document.getElementById('archiveSearch').value;
+            const results = products.filter(p => p.name.includes(query));
+            let html = '';
+            results.forEach(p => {
+                html += '<div class="list-item" onclick="addBuyPrice(' + p.id + ')">' +
+                    '<span>' + p.name + '</span>' +
+                    '<span>آخرین خرید: ' + p.buyPrice.toLocaleString('fa-IR') + ' تومان</span></div>';
+            });
+            document.getElementById('archiveSearchResults').innerHTML = html || 'کالایی یافت نشد';
+        }
+
+        function addBuyPrice(productId) {
+            const product = products.find(p => p.id === productId);
+            const price = prompt('قیمت خرید جدید:', product.buyPrice);
+            if (price) {
+                product.buyPrice = parseInt(price);
+                product.buyHistory.push({price: parseInt(price), date: new Date().toLocaleDateString('fa-IR')});
+                saveData();
+                alert('ثبت شد');
+            }
+        }
+
+        function editSellPriceFromArchive(productId) {
+            const product = products.find(p => p.id === productId);
+            const price = prompt('قیمت فروش جدید:', product.sellPrice);
+            if (price) {
+                product.sellPrice = parseInt(price);
+                saveData();
+                alert('تغییر کرد');
+                showPersonalPage('archive');
+            }
+        }
+    </script>
+</body>
+</html>
